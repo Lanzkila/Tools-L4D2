@@ -4,224 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cvar Manager & Script Editor (Auto-Save)</title>
-    
-    <style>
-        /* --- CSS UTAMA --- */
-        body { background-color: #0d1117; color: #c9d1d9; font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 15px; }
-        .container { max-width: 1000px; margin: 0 auto; }
-        .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); position: relative; }
-        h2.main-title { color: #58a6ff; text-align: center; text-transform: uppercase; font-size: 24px; margin-bottom: 30px; letter-spacing: 1px; }
-        h3 { color: #58a6ff; font-size: 15px; margin: 0 0 15px 0; border-left: 4px solid #58a6ff; padding-left: 12px; text-transform: uppercase; }
-
-        /* --- TEXTAREA --- */
-        textarea { 
-            width: 100% !important; 
-            background: #010409 !important; 
-            color: #e6edf3 !important; 
-            border: 1px solid #30363d !important; 
-            border-radius: 8px; 
-            padding: 15px; 
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace; 
-            font-size: 14px !important; 
-            line-height: 1.6;
-            box-sizing: border-box; 
-            margin-bottom: 15px; 
-            min-height: 200px;
-            overflow: auto !important; 
-            white-space: pre !important; 
-            word-wrap: normal !important;
-            transition: border-color 0.8s ease, box-shadow 0.8s ease !important;
-        }
-
-        /* --- BUTTON STYLE --- */
-        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
-        button { 
-            cursor: pointer; padding: 10px 18px; border-radius: 6px; font-size: 12px; font-weight: 600;
-            border: 1px solid #30363d; background: #21262d; color: #c9d1d9; transition: 0.2s;
-        }
-        button:hover { background: #30363d; border-color: #8b949e; color: #58a6ff; }
-        .btn-clear { color: #f85149 !important; border-color: rgba(248,81,73,0.4) !important; }
-        .btn-clear:hover { background: #f85149 !important; color: white !important; }
-        .btn-dl { background: #1f6feb !important; color: white !important; border: none; }
-
-        /* --- GOOGLE AI ELEMENTS --- */
-        :root { --google-border: #4285F4; --warna-kursor: #4285F4; }
-        
-        textarea:focus {
-            border-color: var(--google-border) !important;
-            box-shadow: 0 0 12px var(--google-border) !important;
-            border-width: 2px !important;
-            outline: none !important;
-        }
-
-        .shimmer-line { height: 2px; width: 100%; margin-top: -15px; margin-bottom: 15px; border-radius: 2px; background: linear-gradient(90deg, #4285F4, #EA4335, #FBBC05, #34A853, #4285F4); background-size: 300% 100%; animation: shimmerMove 4s linear infinite; opacity: 0.6; }
-        @keyframes shimmerMove { 0% { background-position: 100% 0%; } 100% { background-position: 0% 0%; } }
-
-        .google-dots { display: flex; gap: 6px; padding: 10px 0; justify-content: center; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; animation: googleJump 1.4s infinite ease-in-out; }
-        .dot:nth-child(1) { background: #4285F4; animation-delay: -0.32s; }
-        .dot:nth-child(2) { background: #EA4335; animation-delay: -0.16s; }
-        .dot:nth-child(3) { background: #FBBC05; animation-delay: -0.08s; }
-        .dot:nth-child(4) { background: #34A853; }
-        @keyframes googleJump { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
-
-        #google-ai-bar { position: fixed; top: 0; left: 0; width: 0%; height: 3px; z-index: 100000; background: linear-gradient(90deg, #4285F4, #EA4335, #FBBC05, #34A853, #4285F4); background-size: 200% 100%; animation: aiBarMove 2s linear infinite; opacity: 0; transition: width 0.3s ease-out, opacity 0.5s ease; }
-        @keyframes aiBarMove { 0% { background-position: 200% 0; } 100% { background-position: 0 0; } }
-
-        @keyframes borderPusing {
-            0% { border-color: #4285F4; box-shadow: 2px -2px 15px #4285F4; }
-            25% { border-color: #EA4335; box-shadow: 2px 2px 15px #EA4335; }
-            50% { border-color: #FBBC05; box-shadow: -2px 2px 15px #FBBC05; }
-            75% { border-color: #34A853; box-shadow: -2px -2px 15px #34A853; }
-            100% { border-color: #4285F4; box-shadow: 2px -2px 15px #4285F4; }
-        }
-        .google-ai-rotate { animation: borderPusing 1.2s linear infinite !important; border-width: 2px !important; }
-
-        footer { text-align: center; padding: 30px; color: #8b949e; font-size: 11px; border-top: 1px solid #30363d; margin-top: 30px; }
-
-        @media screen and (max-width: 600px) {
-            button { flex: 1 1 45%; padding: 12px 5px; font-size: 11px; }
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="google-ai-bar"></div>
 
-<div class="container">
-    <h2 class="main-title">🛠️ Modding Editor Pro</h2>
+    <div class="container">
+        <h2 class="main-title">🛠️ Modding Editor Pro</h2>
 
-    <div class="card">
-        <div class="google-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-        <h3>Cvar Manager</h3>
-        <textarea id="cvarBox" oninput="saveData('cvarBox')" placeholder="Paste codes here..."></textarea>
-        <div class="shimmer-line"></div>
-        <div class="btn-group">
-            <button onclick="copyIt('cvarBox')">COPY ALL</button>
-            <button class="btn-clear" onclick="clearIt('cvarBox')">CLEAR ALL</button>
-            <button class="btn-dl" onclick="dl('cvarBox', 'mod.nut')">.NUT</button>
-            <button class="btn-dl" onclick="dl('cvarBox', 'autoexec.cfg')">.CFG</button>
-            <button class="btn-dl" onclick="dl('cvarBox', 'config.txt')">.TXT</button>
+        <div class="card">
+            <h3>Cvar Manager</h3>
+            <textarea id="cvarBox" oninput="saveData('cvarBox')" placeholder="Paste codes here..."></textarea>
+            <div class="btn-group">
+                <button onclick="copyIt('cvarBox')">COPY ALL</button>
+                <button class="btn-clear" onclick="clearIt('cvarBox')">CLEAR ALL</button>
+                <button class="btn-dl" onclick="dl('cvarBox', 'mod.nut')">.NUT</button>
+                <button class="btn-dl" onclick="dl('cvarBox', 'autoexec.cfg')">.CFG</button>
+                <button class="btn-dl" onclick="dl('cvarBox', 'config.txt')">.TXT</button>
+            </div>
         </div>
+
+        <div class="card">
+            <h3>AddonInfo</h3>
+            <textarea id="addonBox" oninput="saveData('addonBox')" placeholder="Addon information..."></textarea>
+            <div class="btn-group">
+                <button onclick="copyIt('addonBox')">COPY ALL</button>
+                <button class="btn-clear" onclick="clearIt('addonBox')">CLEAR ALL</button>
+                <button class="btn-dl" onclick="dl('addonBox', 'addoninfo.txt')">DOWNLOAD .TXT</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Script Editor</h3>
+            <textarea id="scriptBox" oninput="saveData('scriptBox')" placeholder="Write scripts here..."></textarea>
+            <div class="btn-group">
+                <button onclick="copyIt('scriptBox')">COPY ALL</button>
+                <button class="btn-clear" onclick="clearIt('scriptBox')">CLEAR ALL</button>
+                <button class="btn-dl" onclick="dl('scriptBox', 'script.nut')">.NUT</button>
+                <button class="btn-dl" onclick="dl('scriptBox', 'script.cfg')">.CFG</button>
+                <button class="btn-dl" onclick="dl('scriptBox', 'script.txt')">.TXT</button>
+            </div>
+        </div>
+
+        <footer>
+            © <span id="y"></span> Modding Tool Center | Auto-Save Enabled
+        </footer>
     </div>
 
-    <div class="card">
-        <div class="google-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-        <h3>AddonInfo</h3>
-        <textarea id="addonBox" oninput="saveData('addonBox')" placeholder="Addon information..."></textarea>
-        <div class="shimmer-line"></div>
-        <div class="btn-group">
-            <button onclick="copyIt('addonBox')">COPY ALL</button>
-            <button class="btn-clear" onclick="clearIt('addonBox')">CLEAR ALL</button>
-            <button class="btn-dl" onclick="dl('addonBox', 'addoninfo.txt')">DOWNLOAD .TXT</button>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="google-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-        <h3>Script Editor</h3>
-        <textarea id="scriptBox" oninput="saveData('scriptBox')" placeholder="Write scripts here..."></textarea>
-        <div class="shimmer-line"></div>
-        <div class="btn-group">
-            <button onclick="copyIt('scriptBox')">COPY ALL</button>
-            <button class="btn-clear" onclick="clearIt('scriptBox')">CLEAR ALL</button>
-            <button class="btn-dl" onclick="dl('scriptBox', 'script.nut')">.NUT</button>
-            <button class="btn-dl" onclick="dl('scriptBox', 'script.cfg')">.CFG</button>
-            <button class="btn-dl" onclick="dl('scriptBox', 'script.txt')">.TXT</button>
-        </div>
-    </div>
-
-    <footer>
-        © <span id="y"></span> Modding Tool Center | Auto-Save Enabled
-    </footer>
-</div>
-
-<div id="google-ai-bar"></div>
-
-<script>
-    // Set Tahun
-    document.getElementById('y').textContent = new Date().getFullYear();
-
-    // Auto-Load Data
-    window.addEventListener('load', function() {
-        const ids = ['cvarBox', 'addonBox', 'scriptBox'];
-        ids.forEach(id => {
-            const savedData = localStorage.getItem('auto_' + id);
-            if (savedData) document.getElementById(id).value = savedData;
-        });
-        triggerGoogleBar();
-        pusingWarnaAI();
-    });
-
-    // Auto-Save Data
-    function saveData(id) {
-        localStorage.setItem('auto_' + id, document.getElementById(id).value);
-    }
-
-    function copyIt(id) {
-        const t = document.getElementById(id);
-        t.select();
-        document.execCommand('copy');
-        triggerGoogleBar();
-    }
-
-    function clearIt(id) {
-        if(confirm('Padam semua kandungan?')) {
-            document.getElementById(id).value = '';
-            localStorage.removeItem('auto_' + id);
-        }
-    }
-
-    function dl(id, filename) {
-        const val = document.getElementById(id).value;
-        if(!val) return alert('Kotak kosong!');
-        const blob = new Blob([val], {type: 'text/plain'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = filename;
-        a.click();
-        triggerGoogleBar();
-    }
-
-    // Google AI Bar Logic
-    function triggerGoogleBar() {
-        const bar = document.getElementById('google-ai-bar');
-        bar.style.opacity = '1'; bar.style.width = '30%';
-        setTimeout(() => { bar.style.width = '70%'; }, 400);
-        setTimeout(() => { 
-            bar.style.width = '100%'; 
-            setTimeout(() => { bar.style.opacity = '0'; }, 400);
-        }, 800);
-    }
-
-    // Border Rotation Logic
-    function pusingWarnaAI() {
-        document.querySelectorAll('textarea').forEach(t => {
-            t.classList.add('google-ai-rotate');
-            setTimeout(() => t.classList.remove('google-ai-rotate'), 1500);
-        });
-    }
-
-    // Color Loop for Border & Caret
-    const warnaGoogle = ['#4285F4', '#EA4335', '#FBBC05', '#34A853'];
-    let colorIdx = 0;
-    setInterval(() => {
-        colorIdx = (colorIdx + 1) % warnaGoogle.length;
-        document.documentElement.style.setProperty('--google-border', warnaGoogle[colorIdx]);
-        document.documentElement.style.setProperty('--warna-kursor', warnaGoogle[colorIdx]);
-    }, 2000);
-
-    // Particle effect on button click
-    document.querySelectorAll('button').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            for(let i=0; i<5; i++) {
-                const p = document.createElement('div');
-                p.style = `position:fixed; width:4px; height:4px; border-radius:50%; background:${warnaGoogle[i%4]}; left:${e.clientX}px; top:${e.clientY}px; z-index:9999;`;
-                document.body.appendChild(p);
-                p.animate([{transform:'translate(0,0)', opacity:1}, {transform:`translate(${(Math.random()-0.5)*50}px, ${(Math.random()-0.5)*50}px)`, opacity:0}], 600);
-                setTimeout(() => p.remove(), 600);
-            }
-        });
-    });
-</script>
-
+    <script src="script.js"></script>
 </body>
 </html>
